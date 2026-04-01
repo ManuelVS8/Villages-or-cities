@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="es" translate="no">
+<html lang="en" translate="no">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-    <meta name="google" content="notranlate">
-    <title>Pueblo o ciudad</title>
+    <meta name="google" content="notranslate">
+    <title>City or village?</title>
     <link rel="icon" type="image/x-icon" href="https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/icono.ico">
     <style>
         /* ====== Reset & base ====== */
@@ -76,42 +76,12 @@
 
         /* Juego 1: Layout estable */
         .j1-display { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; padding: 1rem; flex:1; justify-content: center; }
-        .text-card { 
-            width: 100%; max-width: 600px; min-height: 140px; background: #fff; border: 4px solid #e6f2ff; border-radius: 20px; 
+        .image-card { 
+            width: 100%; max-width: 640px; aspect-ratio: 4 / 3; background: #fff; border: 4px solid #e6f2ff; border-radius: 20px; 
             overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 16px rgba(0,0,0,0.08); 
-            padding: 1.5rem; text-align: center; font-size: 1.5rem; font-weight: 700; color: var(--blue-dark);
-            line-height: 1.4;
         }
-
-        /* Botón Play Personalizado */
-        .btn-play-audio {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background-color: var(--blue-600);
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            transition: transform 0.2s ease, background-color 0.2s ease;
-            padding-left: 5px; /* Ajuste óptico para centrar triángulo */
-        }
-        .btn-play-audio:hover {
-            transform: scale(1.1);
-            background-color: var(--blue-700);
-        }
-        .btn-play-audio:active {
-            transform: scale(0.95);
-        }
-        /* Triángulo Blanco con CSS puro */
-        .play-icon {
-            width: 0; 
-            height: 0; 
-            border-left: 18px solid white; 
-            border-top: 11px solid transparent; 
-            border-bottom: 11px solid transparent;
+        .image-card img {
+            width: 100%; height: 100%; object-fit: cover; display: block;
         }
         
         .j1-controls { display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; width: 100%; }
@@ -120,12 +90,12 @@
         .btn-j1 { 
             width: 160px; 
             height: 120px; 
-            flex-direction: column; /* Apila elementos verticalmente */
+            flex-direction: column; 
             padding: 10px; 
             text-shadow: 0 2px 4px rgba(0,0,0,0.5); 
             font-size: 1.2rem; 
             line-height: 1.2;
-            justify-content: center; /* Centra verticalmente el contenido */
+            justify-content: center; 
         }
         .btn-j1 .btn-emoji {
             font-size: 2.5rem;
@@ -133,6 +103,48 @@
         }
         .btn-green { background-color: var(--green) !important; }
         .btn-red { background-color: var(--red) !important; }
+
+        /* Pantalla de Juego 2 y 3 (Grid) */
+        .grid-display { 
+            display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 0.5rem; flex:1; width: 100%; 
+        }
+        .grid-instruction-icon {
+            font-size: 5rem;
+            line-height: 1;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .grid-cell {
+            aspect-ratio: 4 / 3;
+            border: 4px solid transparent;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            background: none;
+            padding: 0;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: border-color 0.2s ease, transform 0.1s ease;
+        }
+        .grid-cell:hover {
+            transform: scale(1.03);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        .grid-cell img {
+            width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none;
+        }
+        .grid-cell.cell-correct {
+            border-color: var(--green) !important;
+            border-width: 6px;
+        }
+        .grid-cell.cell-wrong {
+            border-color: var(--red) !important;
+        }
 
         /* Pantalla Final */
         .results{ display:flex; flex-direction:column; align-items:center; gap:0.8rem; text-align:center; flex:1; justify-content:center; padding: 1rem; }
@@ -155,18 +167,27 @@
         .confetti{ position:fixed; width:12px; height:12px; border-radius:50%; animation: confetti-fall 3s linear forwards; z-index:1000; pointer-events: none; }
         @keyframes confetti-fall{ 0%{ transform:translate(0, -20px) rotate(0); opacity:1;} 100%{ transform:translate(var(--tx), var(--ty)) rotate(360deg); opacity:0; } }
 
-        @media (max-width: 450px) {
-            .text-card { font-size: 1.2rem; min-height: 120px; }
+        @media (max-width: 750px) {
+            .grid-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        @media (max-width: 550px) {
+            .image-card { max-width: 100%; }
             .btn-j1 { width: 140px; height: 100px; }
             .btn-j1 .btn-emoji { font-size: 2.2rem; }
-            .btn-play-audio { width: 50px; height: 50px; }
-            .play-icon { border-left-width: 15px; border-top-width: 9px; border-bottom-width: 9px; }
+            .grid-instruction-icon {
+                font-size: 4rem;
+            }
+            .grid-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
     </style>
 </head>
 <body>
 
-<div class="game-container" id="mainWrapper">
+<div class="game-container notranslate" id="mainWrapper">
     <button class="mute-btn" id="muteBtn">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
@@ -177,57 +198,80 @@
 
     <section class="screen active" id="startScreen">
         <header>
-            <h1>Pueblo o ciudad</h1>
-            <div class="subtitle">Aprende las principales diferencias entre pueblo y ciudad.</div>
+            <h1>City or village?</h1>
+            <div class="subtitle">Identify the images.</div>
         </header>
         <div class="start-content">
             <div class="advice-box">
-                Los pueblos y ciudades tienen diferentes características; por ejemplo el <span class="highlight-keyword">número de habitantes</span>, <span class="highlight-keyword">tamaño de localidades</span>, <span class="highlight-keyword">edificios</span>, <span class="highlight-keyword">calles</span>, <span class="highlight-keyword">tráfico</span>, <span class="highlight-keyword">servicios</span>, etc.
-                <div class="advice-anim-text">¡Buena suerte!</div>
+                There are several differences between cities and villages; for example, the number of <span class="highlight-keyword">people</span>, the types of <span class="highlight-keyword">buildings</span>, <span class="highlight-keyword">traffic</span>, <span class="highlight-keyword">services</span>, and so on.
+                <div class="advice-anim-text"><b>Good luck!</b></div>
             </div>
             <div class="start-image-container">
-                <img class="start-image" src="https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Ni%C3%B1os.png" alt="Niños">
+                <img class="start-image" src="https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Ni%C3%B1os.png" alt="Children">
             </div>
-            <button class="btn btn-start" id="startBtn">Comenzar</button>
+            <button class="btn btn-start" id="startBtn">Play</button>
         </div>
     </section>
 
-    <section class="screen" id="gameScreen">
+    <section class="screen" id="gameScreen1">
         <header>
-            <h1>¿Pueblo o ciudad?</h1>
-            <div class="subtitle">Indica si las siguientes características se refieren a <span class="text-green">pueblo</span> o <span class="text-red">ciudad</span>.</div>
+            <h1>Is it a city or a village?</h1>
+            <div class="subtitle">Identify the pictures. Select <span class="text-green">Village</span> or <span class="text-red">City</span>.</div>
         </header>
         <div class="game-info">
-            <div class="progress-bar"><div class="progress-fill" id="progGame"></div></div>
-            <div class="timer" id="timerDisplay">00:00.0</div>
+            <div class="progress-bar"><div class="progress-fill" id="progGame1"></div></div>
+            <div class="timer" id="timerDisplay1">00:00.0</div>
         </div>
-        <div class="j1-display" id="gameBoard">
-            <div class="text-card" id="textCard">Pulsa comenzar para iniciar</div>
-            
-            <!-- Botón Play Añadido -->
-            <button class="btn-play-audio" id="btnReplay" title="Escuchar de nuevo">
-                <div class="play-icon"></div>
-            </button>
-
-            <div class="j1-controls">
-                <!-- Cambiado a estructura vertical: Palabra <br> Emoji -->
-                <button class="btn btn-j1 btn-green" id="btnTrue">Pueblo<br><span class="btn-emoji">🏘️</span></button>
-                <button class="btn btn-j1 btn-red" id="btnFalse">Ciudad<br><span class="btn-emoji">🏙️</span></button>
+        <div class="j1-display" id="gameBoard1">
+            <div class="image-card" id="imageCard1">
+                <img id="imgJ1" src="" alt="Image">
             </div>
+            <div class="j1-controls">
+                <button class="btn btn-j1 btn-green" id="btnTrue1">Village<br><span class="btn-emoji">🏘️</span></button>
+                <button class="btn btn-j1 btn-red" id="btnFalse1">City<br><span class="btn-emoji">🏙️</span></button>
+            </div>
+        </div>
+    </section>
+
+    <section class="screen" id="gameScreen2">
+        <header>
+            <h1>Select the pictures of villages 🏘️</h1>
+        </header>
+        <div class="game-info">
+            <div class="progress-bar"><div class="progress-fill" id="progGame2"></div></div>
+            <div class="timer" id="timerDisplay2">00:00.0</div>
+        </div>
+        <div class="grid-display">
+            <div class="grid-instruction-icon">🏘️</div>
+            <div class="grid-container" id="gridContainer2"></div>
+        </div>
+    </section>
+
+    <section class="screen" id="gameScreen3">
+        <header>
+            <h1>Select the pictures of cities 🏙️</h1>
+        </header>
+        <div class="game-info">
+            <div class="progress-bar"><div class="progress-fill" id="progGame3"></div></div>
+            <div class="timer" id="timerDisplay3">00:00.0</div>
+        </div>
+        <div class="grid-display">
+            <div class="grid-instruction-icon">🏙️</div>
+            <div class="grid-container" id="gridContainer3"></div>
         </div>
     </section>
 
     <section class="screen" id="finalScreen">
-        <header><h1 style="color: var(--blue-dark);">El pueblo y la ciudad</h1></header>
+        <header><h1 style="color: var(--blue-dark);">City or village?</h1></header>
         <div class="results">
             <div id="trophyBox">🏆</div>
-            <div style="font-size: 1.5rem; font-weight: 700;">Puntuación:</div>
+            <div style="font-size: 1.5rem; font-weight: 700;">Score:</div>
             <div class="big-score" id="finalScore">0</div>
-            <div class="final-time">Tiempo total: <span id="totalTime">00:00.0</span></div>
+            <div class="final-time">Time: <span id="totalTime">00:00.0</span></div>
             <div id="finalMsg" class="subtitle" style="margin-bottom: 1.5rem;"></div>
-            <button class="btn btn-start" id="restartBtn">Volver al menú</button>
-            <div class="credit">Creado por Manuel J. Ventura</div>
-            <img class="school-logo" src="https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Siurot.png" alt="Logo Colegio">
+            <button class="btn btn-start" id="restartBtn">Back to menu</button>
+            <div class="credit">Created by Manuel J. Ventura</div>
+            <img class="school-logo" src="https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Siurot.png" alt="School Logo">
         </div>
     </section>
 </div>
@@ -243,33 +287,51 @@
     };
 
     // --- Datos del Juego ---
-    const QUESTIONS = [
-        { text: "Viven pocas personas", isPueblo: true, audio: 'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/main/C_MEDIO1/Pueblo_Ciudad/Pocas_personas.mp3' },
-        { text: "Es una localidad pequeña", isPueblo: true, audio: 'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/main/C_MEDIO1/Pueblo_Ciudad/Localidad_pueblo.mp3' },
-        { text: "Los edificios son bajos", isPueblo: true, audio: 'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/main/C_MEDIO1/Pueblo_Ciudad/Edificios_pueblo.mp3' },
-        { text: "Casi todas las calles son estrechas y cortas", isPueblo: true, audio: 'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/main/C_MEDIO1/Pueblo_Ciudad/Calles_pueblo.mp3' },
-        { text: "No hay muchos vehículos", isPueblo: true, audio: 'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/main/C_MEDIO1/Pueblo_Ciudad/Pocos_vehiculos.mp3' },
-        { text: "Hay pocas señales de tráfico", isPueblo: true, audio: 'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/main/C_MEDIO1/Pueblo_Ciudad/Pocas_se%C3%B1ales.mp3' },
-        { text: "Las personas suelen ir andando", isPueblo: true, audio: 'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/main/C_MEDIO1/Pueblo_Ciudad/Andando.mp3' },
-        { text: "Viven muchas personas", isPueblo: false, audio: 'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/main/C_MEDIO1/Pueblo_Ciudad/Muchas_personas.mp3' },
-        { text: "Es una localidad grande", isPueblo: false, audio: 'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/main/C_MEDIO1/Pueblo_Ciudad/Localidad_grande.mp3' },
-        { text: "Hay edificios muy altos", isPueblo: false, audio: 'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/main/C_MEDIO1/Pueblo_Ciudad/Edificios.mp3' },
-        { text: "Tiene calles muy anchas y largas", isPueblo: false, audio: 'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/main/C_MEDIO1/Pueblo_Ciudad/Calles_ciudad.mp3' },
-        { text: "Hay muchos vehículos", isPueblo: false, audio: 'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/main/C_MEDIO1/Pueblo_Ciudad/Muchos_vehiculos.mp3' },
-        { text: "Hay muchas señales de tráfico", isPueblo: false, audio: 'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/main/C_MEDIO1/Pueblo_Ciudad/Muchas_se%C3%B1ales.mp3' },
-        { text: "Pueden usar transporte público", isPueblo: false, audio: 'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/main/C_MEDIO1/Pueblo_Ciudad/Transporte_publico.mp3' }
+    const VILLAGE_IMAGES = [
+        'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/C_MEDIO1/Pueblo_Ciudad/Imagen%20Ciudad_pueblo/Pueblo1.png',
+        'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/C_MEDIO1/Pueblo_Ciudad/Imagen%20Ciudad_pueblo/Pueblo2.png',
+        'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/C_MEDIO1/Pueblo_Ciudad/Imagen%20Ciudad_pueblo/Pueblo3.png',
+        'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/C_MEDIO1/Pueblo_Ciudad/Imagen%20Ciudad_pueblo/Pueblo4.png',
+        'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/C_MEDIO1/Pueblo_Ciudad/Imagen%20Ciudad_pueblo/Pueblo5.png'
+    ];
+
+    const CITY_IMAGES = [
+        'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/C_MEDIO1/Pueblo_Ciudad/Imagen%20Ciudad_pueblo/Ciudad1.png',
+        'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/C_MEDIO1/Pueblo_Ciudad/Imagen%20Ciudad_pueblo/Ciudad2.png',
+        'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/C_MEDIO1/Pueblo_Ciudad/Imagen%20Ciudad_pueblo/Ciudad3.png',
+        'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/C_MEDIO1/Pueblo_Ciudad/Imagen%20Ciudad_pueblo/Ciudad4.png',
+        'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/C_MEDIO1/Pueblo_Ciudad/Imagen%20Ciudad_pueblo/Ciudad5.png'
+    ];
+
+    const GAME_1_DATA = [
+        { url: VILLAGE_IMAGES[0], isVillage: true },
+        { url: VILLAGE_IMAGES[1], isVillage: true },
+        { url: VILLAGE_IMAGES[2], isVillage: true },
+        { url: VILLAGE_IMAGES[3], isVillage: true },
+        { url: VILLAGE_IMAGES[4], isVillage: true },
+        { url: CITY_IMAGES[0], isVillage: false },
+        { url: CITY_IMAGES[1], isVillage: false },
+        { url: CITY_IMAGES[2], isVillage: false },
+        { url: CITY_IMAGES[3], isVillage: false },
+        { url: CITY_IMAGES[4], isVillage: false }
     ];
 
     // --- Variables de Estado ---
     let isMuted = false, startTime = 0, timerInterval = null, totalElapsed = 0;
-    let currentQuestionIdx = 0;
-    let activeQuestions = [];
     let totalAttempts = 0;
-    const intentosMinimos = 14;
-    let audioContext; // Variable para el contexto de audio
-    let currentQuestionAudio = null;
+    const intentosMinimos = 20;
+    let audioContext;
     let isProcessing = false;
     
+    // Game 1 State
+    let activeGame1Data = [];
+    let currentQuestionIdx = 0;
+
+    // Grid Games State
+    let grid2CorrectCount = 0;
+    let grid3CorrectCount = 0;
+    let activeGridData = [];
+
     // Precarga de audios
     const audioObjects = {};
     Object.keys(audioFiles).forEach(key => {
@@ -285,7 +347,6 @@
         if (audioContext.state === 'suspended') {
             audioContext.resume();
         }
-        // Crear y reproducir un buffer silencioso para activar el motor
         const buffer = audioContext.createBuffer(1, 1, 22050);
         const source = audioContext.createBufferSource();
         source.buffer = buffer;
@@ -334,25 +395,6 @@
         a.play().catch(e => console.log("Audio play error:", e));
     }
 
-    function playQuestionAudio(audioUrl) {
-        if(isMuted) return;
-        // Detener audio de pregunta anterior si existe
-        if (currentQuestionAudio) {
-            currentQuestionAudio.pause();
-            currentQuestionAudio.currentTime = 0;
-        }
-        currentQuestionAudio = new Audio(audioUrl);
-        currentQuestionAudio.play().catch(e => console.log("Question audio play error:", e));
-    }
-
-    function stopQuestionAudio() {
-        if (currentQuestionAudio) {
-            currentQuestionAudio.pause();
-            currentQuestionAudio.currentTime = 0;
-            currentQuestionAudio = null;
-        }
-    }
-
     // --- Funciones de Utilidad ---
     function shuffle(arr) { return arr.sort(() => Math.random() - 0.5); }
     
@@ -376,9 +418,8 @@
         document.getElementById(id).classList.add('active');
     }
 
-    function updateProgress() {
-        const percent = (currentQuestionIdx / activeQuestions.length) * 100;
-        document.getElementById('progGame').style.width = percent + '%';
+    function updateProgress(progressId, percent) {
+        document.getElementById(progressId).style.width = percent + '%';
     }
 
     function highlightButton(btnElement, color) {
@@ -392,93 +433,163 @@
     // --- Lógica del Juego ---
 
     function startGame() {
-        // FIX: Desbloquear audio al iniciar
         unlockAudioContext();
-        
         reproducirSonidoTap();
-        showScreen('gameScreen');
         
-        // Iniciar variables
-        currentQuestionIdx = 0;
         totalAttempts = 0;
         totalElapsed = 0;
         isProcessing = false;
-        
-        // Barajar preguntas
-        activeQuestions = shuffle([...QUESTIONS]);
-        
-        // Reiniciar barra de progreso
-        document.getElementById('progGame').style.width = '0%';
-        
+        grid2CorrectCount = 0;
+        grid3CorrectCount = 0;
+
+        // Pre-cargar imágenes
+        preloadImages();
+
         // Iniciar Timer
         startTime = Date.now();
         timerInterval = setInterval(() => {
             totalElapsed = Date.now() - startTime;
-            document.getElementById('timerDisplay').textContent = formatTime(totalElapsed);
+            const timeStr = formatTime(totalElapsed);
+            const td1 = document.getElementById('timerDisplay1');
+            const td2 = document.getElementById('timerDisplay2');
+            const td3 = document.getElementById('timerDisplay3');
+            if(td1) td1.textContent = timeStr;
+            if(td2) td2.textContent = timeStr;
+            if(td3) td3.textContent = timeStr;
         }, 100);
 
-        loadQuestion();
+        startGame1();
     }
 
-    function loadQuestion() {
-        if (currentQuestionIdx >= activeQuestions.length) {
-            endGame();
+    function preloadImages() {
+        VILLAGE_IMAGES.forEach(src => { const img = new Image(); img.src = src; });
+        CITY_IMAGES.forEach(src => { const img = new Image(); img.src = src; });
+    }
+
+    // ================= GAME 1 =================
+    function startGame1() {
+        currentQuestionIdx = 0;
+        activeGame1Data = shuffle([...GAME_1_DATA]);
+        updateProgress('progGame1', '0%');
+        showScreen('gameScreen1');
+        loadGame1Question();
+    }
+
+    function loadGame1Question() {
+        if (currentQuestionIdx >= activeGame1Data.length) {
+            startGame2();
             return;
         }
-
         isProcessing = false;
-        const q = activeQuestions[currentQuestionIdx];
-        const textCard = document.getElementById('textCard');
-        
-        textCard.textContent = q.text;
-        updateProgress();
-        
-        // Reproducir audio de la pregunta
-        setTimeout(() => playQuestionAudio(q.audio), 300);
+        const q = activeGame1Data[currentQuestionIdx];
+        document.getElementById('imgJ1').src = q.url;
+        const percent = (currentQuestionIdx / activeGame1Data.length) * 100;
+        updateProgress('progGame1', percent + '%');
     }
 
-    // Función para el botón de replay manual
-    function replayCurrentAudio() {
-        // Asegurar que el audio esté desbloqueado al pulsar el botón
-        unlockAudioContext();
-        if (currentQuestionIdx < activeQuestions.length) {
-            playQuestionAudio(activeQuestions[currentQuestionIdx].audio);
-        }
-    }
-
-    function checkAnswer(userSaidPueblo) {
+    function checkGame1Answer(userSaidVillage) {
         if (isProcessing) return;
         
-        const q = activeQuestions[currentQuestionIdx];
-        const correctAnswer = q.isPueblo;
-        const isCorrect = (userSaidPueblo === correctAnswer);
+        const q = activeGame1Data[currentQuestionIdx];
+        const correctAnswer = q.isVillage;
+        const isCorrect = (userSaidVillage === correctAnswer);
         
         totalAttempts++;
 
         if (isCorrect) {
             isProcessing = true;
             reproducirSonidoCorrecto();
-            // Destacar en verde la opción elegida
-            const btn = userSaidPueblo ? document.getElementById('btnTrue') : document.getElementById('btnFalse');
+            const btn = userSaidVillage ? document.getElementById('btnTrue1') : document.getElementById('btnFalse1');
             highlightButton(btn, '#27ae60');
-            stopQuestionAudio();
             currentQuestionIdx++;
-            setTimeout(() => loadQuestion(), 200);
+            setTimeout(() => loadGame1Question(), 200);
         } else {
             reproducirSonidoError();
-            applyShake('gameBoard');
-            // Destacar en rojo la opción elegida
-            const btn = userSaidPueblo ? document.getElementById('btnTrue') : document.getElementById('btnFalse');
+            applyShake('imageCard1');
+            const btn = userSaidVillage ? document.getElementById('btnTrue1') : document.getElementById('btnFalse1');
             highlightButton(btn, '#c0392b');
         }
     }
 
+    // ================= GAME 2 & 3 =================
+    function setupGrid(screenId, gridContainerId, progressId, isVillageSelection) {
+        updateProgress(progressId, '0%');
+        showScreen(screenId);
+
+        if (isVillageSelection) {
+            grid2CorrectCount = 0;
+        } else {
+            grid3CorrectCount = 0;
+        }
+
+        activeGridData = shuffle([...VILLAGE_IMAGES, ...CITY_IMAGES]);
+        
+        const container = document.getElementById(gridContainerId);
+        container.innerHTML = '';
+
+        activeGridData.forEach((url, index) => {
+            const cell = document.createElement('div');
+            cell.className = 'grid-cell';
+            cell.dataset.index = index;
+            cell.dataset.isVillage = VILLAGE_IMAGES.includes(url) ? 'true' : 'false';
+
+            const img = document.createElement('img');
+            img.src = url;
+            img.alt = isVillageSelection ? (VILLAGE_IMAGES.includes(url) ? 'Village' : 'City') : (CITY_IMAGES.includes(url) ? 'City' : 'Village');
+            cell.appendChild(img);
+
+            cell.onclick = () => handleGridClick(cell, isVillageSelection, progressId);
+            container.appendChild(cell);
+        });
+    }
+
+    function handleGridClick(cell, isVillageSelection, progressId) {
+        if (cell.classList.contains('cell-correct')) return;
+
+        const cellIsVillage = cell.dataset.isVillage === 'true';
+        const isCorrect = isVillageSelection ? cellIsVillage : !cellIsVillage;
+
+        totalAttempts++;
+
+        if (isCorrect) {
+            reproducirSonidoCorrecto();
+            cell.classList.add('cell-correct');
+            
+            if (isVillageSelection) {
+                grid2CorrectCount++;
+                updateProgress(progressId, (grid2CorrectCount / 5) * 100 + '%');
+                if (grid2CorrectCount === 5) {
+                    setTimeout(() => startGame3(), 600);
+                }
+            } else {
+                grid3CorrectCount++;
+                updateProgress(progressId, (grid3CorrectCount / 5) * 100 + '%');
+                if (grid3CorrectCount === 5) {
+                    setTimeout(() => endGame(), 600);
+                }
+            }
+        } else {
+            reproducirSonidoError();
+            cell.classList.add('cell-wrong');
+            cell.classList.add('shake');
+            setTimeout(() => {
+                cell.classList.remove('cell-wrong');
+                cell.classList.remove('shake');
+            }, 400);
+        }
+    }
+
+    function startGame2() {
+        setupGrid('gameScreen2', 'gridContainer2', 'progGame2', true);
+    }
+
+    function startGame3() {
+        setupGrid('gameScreen3', 'gridContainer3', 'progGame3', false);
+    }
+
+    // ================= FINAL =================
     function endGame() {
         clearInterval(timerInterval);
-        
-        // Cancelar audio de pregunta al terminar
-        stopQuestionAudio();
-        
         showScreen('finalScreen');
         
         const finalScore = Math.max(0, Math.round(100 - ((totalAttempts - intentosMinimos) * (100 / intentosMinimos))));
@@ -488,12 +599,12 @@
 
         if(finalScore === 100) {
             document.getElementById('trophyBox').style.display = 'block';
-            document.getElementById('finalMsg').textContent = '¡Enhorabuena, puntuación máxima!';
+            document.getElementById('finalMsg').textContent = 'Well done, full marks!';
             reproducirSonidoVictoria();
             createConfetti();
         } else {
             document.getElementById('trophyBox').style.display = 'none';
-            document.getElementById('finalMsg').textContent = '¡Buen trabajo! Sigue practicando';
+            document.getElementById('finalMsg').textContent = 'Good job! Keep practising!';
             reproducirSonidoCompletado();
         }
     }
@@ -517,11 +628,8 @@
     // --- Eventos ---
     document.getElementById('startBtn').onclick = startGame;
     
-    document.getElementById('btnTrue').onclick = () => checkAnswer(true);
-    document.getElementById('btnFalse').onclick = () => checkAnswer(false);
-    
-    // Evento para el botón de replay
-    document.getElementById('btnReplay').onclick = replayCurrentAudio;
+    document.getElementById('btnTrue1').onclick = () => checkGame1Answer(true);
+    document.getElementById('btnFalse1').onclick = () => checkGame1Answer(false);
     
     document.getElementById('restartBtn').onclick = () => {
         reproducirSonidoTap();
@@ -530,13 +638,9 @@
     
     document.getElementById('muteBtn').onclick = () => { 
         if (!isMuted) {
-            // Si está activado y lo vamos a desactivar, no suena nada
             isMuted = true;
             document.getElementById('muteBtn').innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>';
-            // Cancelar audio de pregunta si se mutea
-            stopQuestionAudio();
         } else {
-            // Si está desactivado y lo vamos a activar, suena tap
             isMuted = false;
             document.getElementById('muteBtn').innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>';
             reproducirSonidoTap();
