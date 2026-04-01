@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="es" translate="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta name="google" content="notranlate">
+    <title>Pueblo o ciudad</title>
+    <link rel="icon" type="image/x-icon" href="https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/icono.ico">
+    <style>
+        /* ====== Reset & base ====== */
+        * { box-sizing: border-box; margin:0; padding:0; }
+        :root{
+            --blue-dark:#04032B;
+            --blue-700:#1a3a5f;
+            --blue-600:#254fba;
+            --orange:#f59e42;
+            --orange-700:#e67e22;
+            --bg-grad-1:#1a3a5f;
+            --bg-grad-2:#0d2340;
+            --white:#ffffff;
+            --green:#2ecc71;
+            --red:#e74c3c;
+            --panel:#E8EAFF;
+        }
+        body{
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-grad-1) 0%, var(--bg-grad-2) 100%);
+            min-height:100vh; 
+            display:flex; 
+            justify-content:center; 
+            align-items: flex-start; 
+            color:#333; 
+            padding: 40px 10px 20px 10px; 
+        }
+        .game-container{
+            background:var(--white); border-radius:16px; box-shadow:0 12px 24px rgba(0,0,0,.12);
+            padding:1.5rem; max-width:980px; width:100%; min-height:640px; position:relative; overflow:hidden;
+            display:flex; flex-direction:column;
+        }
+        header{ text-align:center; margin-bottom:.8rem; margin-top:0.5rem; }
+        h1{ color:var(--blue-dark); font-size:clamp(1.8rem,5vw,2.8rem); font-weight:900; letter-spacing:.5px; margin-bottom: 0.5rem; }
+        .subtitle{ color:var(--blue-700); font-size:clamp(1rem,3vw,1.3rem); margin-top:.25rem; font-weight: 600; line-height: 1.4; }
+        .highlight-keyword{ color:var(--orange); font-weight:800; }
+        .text-green { color: var(--green); font-weight: 800; }
+        .text-red { color: var(--red); font-weight: 800; }
+
+        /* Buttons Base */
+        .btn{ color:#fff; border:none; border-radius:12px; cursor:pointer; font-weight:800;
+            transition:transform .1s ease, box-shadow .2s ease, background-color .25s ease;
+            display:inline-flex; align-items:center; justify-content:center; font-size: 1.1rem; gap: 10px; }
+        .btn:hover{ transform:translateY(-3px); box-shadow:0 6px 14px rgba(0,0,0,.15); }
+        .btn:active{ transform:translateY(0); }
+        
+        .btn-start { background: var(--orange); margin: 1rem auto; padding: 0.75rem 2rem; height: 55px; font-size: 1.3rem; min-width: 200px; }
+
+        /* Pantallas */
+        .screen{ display:none; animation:fadeIn .4s ease; flex-direction: column; flex:1; width: 100%; }
+        .screen.active{ display:flex; }
+        @keyframes fadeIn{ from{opacity:0; transform:translateY(15px);} to{opacity:1; transform:translateY(0);} }
+
+        /* Info & Progress */
+        .game-info{ display:flex; gap:1rem; align-items:center; justify-content:space-between; margin:1rem 0; width: 100%; }
+        .timer{ font-weight:900; color:var(--blue-700); font-size:1.2rem; min-width: 100px; text-align: right; }
+        .progress-bar{ flex:1; height:14px; background:#e6f2ff; border-radius:999px; overflow:hidden; border: 1px solid #d3e2ff; }
+        .progress-fill{ height:100%; width:0%; background: var(--orange); transition:width .4s ease; }
+
+        /* Pantalla Inicio */
+        .start-content{ display:flex; flex-direction:column; align-items:center; flex:1; padding:1rem; text-align: center; }
+        .advice-box{ background:var(--panel); border-left:5px solid var(--blue-700); padding:1.5rem; border-radius:12px;
+            color:var(--blue-700); max-width:800px; font-size:1.2rem; line-height: 1.6; margin-bottom: 1.5rem; }
+        .advice-anim-text { display: block; text-align: center; font-weight: 900; margin-top: 1rem; font-size: 1.5rem; }
+        .start-image-container { width: 100%; display: flex; justify-content: center; margin-top: auto; }
+        .start-image{ max-width: 450px; width: 100%; height: auto; }
+
+        .mute-btn{ position:absolute; top:1rem; right:1rem; background:var(--orange); color:#fff; border:2px solid #fff; width:42px; height:42px; border-radius:50%; cursor:pointer; font-size:1.2rem; display:flex; align-items:center; justify-content:center; z-index:100; }
+
+        /* Juego 1: Layout estable */
+        .j1-display { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; padding: 1rem; flex:1; justify-content: center; }
+        .text-card { 
+            width: 100%; max-width: 600px; min-height: 140px; background: #fff; border: 4px solid #e6f2ff; border-radius: 20px; 
+            overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 16px rgba(0,0,0,0.08); 
+            padding: 1.5rem; text-align: center; font-size: 1.5rem; font-weight: 700; color: var(--blue-dark);
+            line-height: 1.4;
+        }
+
+        /* Botón Play Personalizado */
+        .btn-play-audio {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--blue-600);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: transform 0.2s ease, background-color 0.2s ease;
+            padding-left: 5px; /* Ajuste óptico para centrar triángulo */
+        }
+        .btn-play-audio:hover {
+            transform: scale(1.1);
+            background-color: var(--blue-700);
+        }
+        .btn-play-audio:active {
+            transform: scale(0.95);
+        }
+        /* Triángulo Blanco con CSS puro */
+        .play-icon {
+            width: 0; 
+            height: 0; 
+            border-left: 18px solid white; 
+            border-top: 11px solid transparent; 
+            border-bottom: 11px solid transparent;
+        }
+        
+        .j1-controls { display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; width: 100%; }
+        
+        /* Ajuste Botones J1: Columna para alinear texto y emoji */
+        .btn-j1 { 
+            width: 160px; 
+            height: 120px; 
+            flex-direction: column; /* Apila elementos verticalmente */
+            padding: 10px; 
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5); 
+            font-size: 1.2rem; 
+            line-height: 1.2;
+            justify-content: center; /* Centra verticalmente el contenido */
+        }
+        .btn-j1 .btn-emoji {
+            font-size: 2.5rem;
+            line-height: 1;
+        }
+        .btn-green { background-color: var(--green) !important; }
+        .btn-red { background-color: var(--red) !important; }
+
+        /* Pantalla Final */
+        .results{ display:flex; flex-direction:column; align-items:center; gap:0.8rem; text-align:center; flex:1; justify-content:center; padding: 1rem; }
+        .big-score{ font-size:clamp(3rem,8vw,4.5rem); color:var(--blue-600); font-weight:900; margin: 0.5rem 0; }
+        #trophyBox { display: none; font-size: 5.5rem; animation: bounce 1s ease infinite; margin-bottom: 0.5rem; }
+        @keyframes bounce { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-20px); } }
+        .final-time { font-size: 1.3rem; color: var(--blue-700); font-weight: 600; margin-bottom: 0.5rem; }
+        .school-logo { width: 180px; margin-top: 1rem; }
+        .credit { font-weight: 700; color: #555; }
+
+        /* Animaciones Globales */
+        .shake { animation: shakeAnim 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shakeAnim {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+            40%, 60% { transform: translate3d(6px, 0, 0); }
+        }
+
+        .confetti{ position:fixed; width:12px; height:12px; border-radius:50%; animation: confetti-fall 3s linear forwards; z-index:1000; pointer-events: none; }
+        @keyframes confetti-fall{ 0%{ transform:translate(0, -20px) rotate(0); opacity:1;} 100%{ transform:translate(var(--tx), var(--ty)) rotate(360deg); opacity:0; } }
+
+        @media (max-width: 450px) {
+            .text-card { font-size: 1.2rem; min-height: 120px; }
+            .btn-j1 { width: 140px; height: 100px; }
+            .btn-j1 .btn-emoji { font-size: 2.2rem; }
+            .btn-play-audio { width: 50px; height: 50px; }
+            .play-icon { border-left-width: 15px; border-top-width: 9px; border-bottom-width: 9px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container" id="mainWrapper">
+    <button class="mute-btn" id="muteBtn">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+        </svg>
+    </button>
+
+    <section class="screen active" id="startScreen">
+        <header>
+            <h1>Pueblo o ciudad</h1>
+            <div class="subtitle">Aprende las principales diferencias entre pueblo y ciudad.</div>
+        </header>
+        <div class="start-content">
+            <div class="advice-box">
+                Los pueblos y ciudades tienen diferentes características; por ejemplo el <span class="highlight-keyword">número de habitantes</span>, <span class="highlight-keyword">tamaño de localidades</span>, <span class="highlight-keyword">edificios</span>, <span class="highlight-keyword">calles</span>, <span class="highlight-keyword">tráfico</span>, <span class="highlight-keyword">servicios</span>, etc.
+                <div class="advice-anim-text">¡Buena suerte!</div>
+            </div>
+            <div class="start-image-container">
+                <img class="start-image" src="https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Ni%C3%B1os.png" alt="Niños">
+            </div>
+            <button class="btn btn-start" id="startBtn">Comenzar</button>
+        </div>
+    </section>
+
+    <section class="screen" id="gameScreen">
+        <header>
+            <h1>¿Pueblo o ciudad?</h1>
+            <div class="subtitle">Indica si las siguientes características se refieren a <span class="text-green">pueblo</span> o <span class="text-red">ciudad</span>.</div>
+        </header>
+        <div class="game-info">
+            <div class="progress-bar"><div class="progress-fill" id="progGame"></div></div>
+            <div class="timer" id="timerDisplay">00:00.0</div>
+        </div>
+        <div class="j1-display" id="gameBoard">
+            <div class="text-card" id="textCard">Pulsa comenzar para iniciar</div>
+            
+            <!-- Botón Play Añadido -->
+            <button class="btn-play-audio" id="btnReplay" title="Escuchar de nuevo">
+                <div class="play-icon"></div>
+            </button>
+
+            <div class="j1-controls">
+                <!-- Cambiado a estructura vertical: Palabra <br> Emoji -->
+                <button class="btn btn-j1 btn-green" id="btnTrue">Pueblo<br><span class="btn-emoji">🏘️</span></button>
+                <button class="btn btn-j1 btn-red" id="btnFalse">Ciudad<br><span class="btn-emoji">🏙️</span></button>
+            </div>
+        </div>
+    </section>
+
+    <section class="screen" id="finalScreen">
+        <header><h1 style="color: var(--blue-dark);">El pueblo y la ciudad</h1></header>
+        <div class="results">
+            <div id="trophyBox">🏆</div>
+            <div style="font-size: 1.5rem; font-weight: 700;">Puntuación:</div>
+            <div class="big-score" id="finalScore">0</div>
+            <div class="final-time">Tiempo total: <span id="totalTime">00:00.0</span></div>
+            <div id="finalMsg" class="subtitle" style="margin-bottom: 1.5rem;"></div>
+            <button class="btn btn-start" id="restartBtn">Volver al menú</button>
+            <div class="credit">Creado por Manuel J. Ventura</div>
+            <img class="school-logo" src="https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Siurot.png" alt="Logo Colegio">
+        </div>
+    </section>
+</div>
+
+<script>
+    // --- Configuración de Audio (URLs) ---
+    const audioFiles = {
+        completado: 'https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Completado.mp3',
+        correcto: 'https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Correcto.mp3',
+        victoria: 'https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Termin%C3%A9.mp3',
+        error: 'https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Error.mp3',
+        tap: 'https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Tap.mp3'
+    };
+
+    // --- Datos del Juego ---
+    const QUESTIONS = [
+        { text: "Viven pocas personas", isPueblo: true, audio: 'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/main/C_MEDIO1/Pueblo_Ciudad/Pocas_personas.mp3' },
+        { text: "Es una localidad pequeña", isPueblo: true, audio: 'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/main/C_MEDIO1/Pueblo_Ciudad/Localidad_pueblo.mp3' },
+        { text: "Los edificios son bajos", isPueblo: true, audio: 'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/main/C_MEDIO1/Pueblo_Ciudad/Edificios_pueblo.mp3' },
+        { text: "Casi todas las calles son estrechas y cortas", isPueblo: true, audio: 'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/main/C_MEDIO1/Pueblo_Ciudad/Calles_pueblo.mp3' },
+        { text: "No hay muchos vehículos", isPueblo: true, audio: 'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/main/C_MEDIO1/Pueblo_Ciudad/Pocos_vehiculos.mp3' },
+        { text: "Hay pocas señales de tráfico", isPueblo: true, audio: 'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/main/C_MEDIO1/Pueblo_Ciudad/Pocas_se%C3%B1ales.mp3' },
+        { text: "Las personas suelen ir andando", isPueblo: true, audio: 'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/main/C_MEDIO1/Pueblo_Ciudad/Andando.mp3' },
+        { text: "Viven muchas personas", isPueblo: false, audio: 'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/main/C_MEDIO1/Pueblo_Ciudad/Muchas_personas.mp3' },
+        { text: "Es una localidad grande", isPueblo: false, audio: 'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/main/C_MEDIO1/Pueblo_Ciudad/Localidad_grande.mp3' },
+        { text: "Hay edificios muy altos", isPueblo: false, audio: 'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/main/C_MEDIO1/Pueblo_Ciudad/Edificios.mp3' },
+        { text: "Tiene calles muy anchas y largas", isPueblo: false, audio: 'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/main/C_MEDIO1/Pueblo_Ciudad/Calles_ciudad.mp3' },
+        { text: "Hay muchos vehículos", isPueblo: false, audio: 'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/main/C_MEDIO1/Pueblo_Ciudad/Muchos_vehiculos.mp3' },
+        { text: "Hay muchas señales de tráfico", isPueblo: false, audio: 'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/main/C_MEDIO1/Pueblo_Ciudad/Muchas_se%C3%B1ales.mp3' },
+        { text: "Pueden usar transporte público", isPueblo: false, audio: 'https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/main/C_MEDIO1/Pueblo_Ciudad/Transporte_publico.mp3' }
+    ];
+
+    // --- Variables de Estado ---
+    let isMuted = false, startTime = 0, timerInterval = null, totalElapsed = 0;
+    let currentQuestionIdx = 0;
+    let activeQuestions = [];
+    let totalAttempts = 0;
+    const intentosMinimos = 14;
+    let audioContext; // Variable para el contexto de audio
+    let currentQuestionAudio = null;
+    let isProcessing = false;
+    
+    // Precarga de audios
+    const audioObjects = {};
+    Object.keys(audioFiles).forEach(key => {
+        audioObjects[key] = new Audio(audioFiles[key]);
+        audioObjects[key].load();
+    });
+
+    // --- FIX CHROMEOS: Desbloqueo de Audio ---
+    function unlockAudioContext() {
+        if (!audioContext) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioContext.state === 'suspended') {
+            audioContext.resume();
+        }
+        // Crear y reproducir un buffer silencioso para activar el motor
+        const buffer = audioContext.createBuffer(1, 1, 22050);
+        const source = audioContext.createBufferSource();
+        source.buffer = buffer;
+        source.connect(audioContext.destination);
+        source.start(0);
+    }
+
+    // --- Funciones de Sonido ---
+    function reproducirSonidoCorrecto() {
+        if(isMuted) return;
+        const a = audioObjects['correcto'];
+        if (!a) return;
+        a.currentTime = 0;
+        a.play().catch(e => console.log("Audio play error:", e));
+    }
+
+    function reproducirSonidoError() {
+        if(isMuted) return;
+        const a = audioObjects['error'];
+        if (!a) return;
+        a.currentTime = 0;
+        a.play().catch(e => console.log("Audio play error:", e));
+    }
+
+    function reproducirSonidoVictoria() {
+        if(isMuted) return;
+        const a = audioObjects['victoria'];
+        if (!a) return;
+        a.currentTime = 0;
+        a.play().catch(e => console.log("Audio play error:", e));
+    }
+
+    function reproducirSonidoCompletado() {
+        if(isMuted) return;
+        const a = audioObjects['completado'];
+        if (!a) return;
+        a.currentTime = 0;
+        a.play().catch(e => console.log("Audio play error:", e));
+    }
+
+    function reproducirSonidoTap() {
+        if(isMuted) return;
+        const a = audioObjects['tap'];
+        if (!a) return;
+        a.currentTime = 0;
+        a.play().catch(e => console.log("Audio play error:", e));
+    }
+
+    function playQuestionAudio(audioUrl) {
+        if(isMuted) return;
+        // Detener audio de pregunta anterior si existe
+        if (currentQuestionAudio) {
+            currentQuestionAudio.pause();
+            currentQuestionAudio.currentTime = 0;
+        }
+        currentQuestionAudio = new Audio(audioUrl);
+        currentQuestionAudio.play().catch(e => console.log("Question audio play error:", e));
+    }
+
+    function stopQuestionAudio() {
+        if (currentQuestionAudio) {
+            currentQuestionAudio.pause();
+            currentQuestionAudio.currentTime = 0;
+            currentQuestionAudio = null;
+        }
+    }
+
+    // --- Funciones de Utilidad ---
+    function shuffle(arr) { return arr.sort(() => Math.random() - 0.5); }
+    
+    function formatTime(ms) {
+        const d = ms / 1000;
+        const m = Math.floor(d / 60).toString().padStart(2, '0');
+        const s = Math.floor(d % 60).toString().padStart(2, '0');
+        const dec = Math.round((d % 1) * 10);
+        return `${m}:${s}.${dec}`;
+    }
+
+    function applyShake(id) {
+        const el = document.getElementById(id);
+        el.classList.remove('shake');
+        void el.offsetWidth; // Trigger reflow
+        el.classList.add('shake');
+    }
+
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    function updateProgress() {
+        const percent = (currentQuestionIdx / activeQuestions.length) * 100;
+        document.getElementById('progGame').style.width = percent + '%';
+    }
+
+    function highlightButton(btnElement, color) {
+        const originalBg = btnElement.style.backgroundColor;
+        btnElement.style.backgroundColor = color;
+        setTimeout(() => {
+            btnElement.style.backgroundColor = originalBg;
+        }, 200);
+    }
+
+    // --- Lógica del Juego ---
+
+    function startGame() {
+        // FIX: Desbloquear audio al iniciar
+        unlockAudioContext();
+        
+        reproducirSonidoTap();
+        showScreen('gameScreen');
+        
+        // Iniciar variables
+        currentQuestionIdx = 0;
+        totalAttempts = 0;
+        totalElapsed = 0;
+        isProcessing = false;
+        
+        // Barajar preguntas
+        activeQuestions = shuffle([...QUESTIONS]);
+        
+        // Reiniciar barra de progreso
+        document.getElementById('progGame').style.width = '0%';
+        
+        // Iniciar Timer
+        startTime = Date.now();
+        timerInterval = setInterval(() => {
+            totalElapsed = Date.now() - startTime;
+            document.getElementById('timerDisplay').textContent = formatTime(totalElapsed);
+        }, 100);
+
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        if (currentQuestionIdx >= activeQuestions.length) {
+            endGame();
+            return;
+        }
+
+        isProcessing = false;
+        const q = activeQuestions[currentQuestionIdx];
+        const textCard = document.getElementById('textCard');
+        
+        textCard.textContent = q.text;
+        updateProgress();
+        
+        // Reproducir audio de la pregunta
+        setTimeout(() => playQuestionAudio(q.audio), 300);
+    }
+
+    // Función para el botón de replay manual
+    function replayCurrentAudio() {
+        // Asegurar que el audio esté desbloqueado al pulsar el botón
+        unlockAudioContext();
+        if (currentQuestionIdx < activeQuestions.length) {
+            playQuestionAudio(activeQuestions[currentQuestionIdx].audio);
+        }
+    }
+
+    function checkAnswer(userSaidPueblo) {
+        if (isProcessing) return;
+        
+        const q = activeQuestions[currentQuestionIdx];
+        const correctAnswer = q.isPueblo;
+        const isCorrect = (userSaidPueblo === correctAnswer);
+        
+        totalAttempts++;
+
+        if (isCorrect) {
+            isProcessing = true;
+            reproducirSonidoCorrecto();
+            // Destacar en verde la opción elegida
+            const btn = userSaidPueblo ? document.getElementById('btnTrue') : document.getElementById('btnFalse');
+            highlightButton(btn, '#27ae60');
+            stopQuestionAudio();
+            currentQuestionIdx++;
+            setTimeout(() => loadQuestion(), 200);
+        } else {
+            reproducirSonidoError();
+            applyShake('gameBoard');
+            // Destacar en rojo la opción elegida
+            const btn = userSaidPueblo ? document.getElementById('btnTrue') : document.getElementById('btnFalse');
+            highlightButton(btn, '#c0392b');
+        }
+    }
+
+    function endGame() {
+        clearInterval(timerInterval);
+        
+        // Cancelar audio de pregunta al terminar
+        stopQuestionAudio();
+        
+        showScreen('finalScreen');
+        
+        const finalScore = Math.max(0, Math.round(100 - ((totalAttempts - intentosMinimos) * (100 / intentosMinimos))));
+        
+        document.getElementById('finalScore').textContent = finalScore;
+        document.getElementById('totalTime').textContent = formatTime(totalElapsed);
+
+        if(finalScore === 100) {
+            document.getElementById('trophyBox').style.display = 'block';
+            document.getElementById('finalMsg').textContent = '¡Enhorabuena, puntuación máxima!';
+            reproducirSonidoVictoria();
+            createConfetti();
+        } else {
+            document.getElementById('trophyBox').style.display = 'none';
+            document.getElementById('finalMsg').textContent = '¡Buen trabajo! Sigue practicando';
+            reproducirSonidoCompletado();
+        }
+    }
+
+    function createConfetti() {
+        for(let i=0; i<100; i++){
+            setTimeout(() => {
+                const c = document.createElement('div');
+                c.className = 'confetti';
+                c.style.left = Math.random() * 100 + 'vw';
+                c.style.top = '-10px';
+                c.style.backgroundColor = ['#f59e42', '#2ecc71', '#254fba'][Math.floor(Math.random()*3)];
+                c.style.setProperty('--tx', (Math.random()-0.5) * 400 + 'px');
+                c.style.setProperty('--ty', window.innerHeight + 'px');
+                document.body.appendChild(c);
+                setTimeout(() => c.remove(), 3000);
+            }, i * 30);
+        }
+    }
+
+    // --- Eventos ---
+    document.getElementById('startBtn').onclick = startGame;
+    
+    document.getElementById('btnTrue').onclick = () => checkAnswer(true);
+    document.getElementById('btnFalse').onclick = () => checkAnswer(false);
+    
+    // Evento para el botón de replay
+    document.getElementById('btnReplay').onclick = replayCurrentAudio;
+    
+    document.getElementById('restartBtn').onclick = () => {
+        reproducirSonidoTap();
+        location.reload(); 
+    };
+    
+    document.getElementById('muteBtn').onclick = () => { 
+        if (!isMuted) {
+            // Si está activado y lo vamos a desactivar, no suena nada
+            isMuted = true;
+            document.getElementById('muteBtn').innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>';
+            // Cancelar audio de pregunta si se mutea
+            stopQuestionAudio();
+        } else {
+            // Si está desactivado y lo vamos a activar, suena tap
+            isMuted = false;
+            document.getElementById('muteBtn').innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>';
+            reproducirSonidoTap();
+        }
+    };
+</script>
+</body>
+</html>
