@@ -129,7 +129,7 @@
             background: none;
             padding: 0;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            transition: border-color 0.2s ease, transform 0.1s ease;
+            transition: border-color 0.2s ease, transform 0.1s ease, background-color 0.2s ease;
         }
         .grid-cell:hover {
             transform: scale(1.03);
@@ -141,9 +141,11 @@
         .grid-cell.cell-correct {
             border-color: var(--green) !important;
             border-width: 6px;
+            background-color: rgba(46, 204, 113, 0.35); /* Verde transparente para no ocultar la imagen */
         }
         .grid-cell.cell-wrong {
             border-color: var(--red) !important;
+            background-color: rgba(231, 76, 60, 0.3);
         }
 
         /* Pantalla Final */
