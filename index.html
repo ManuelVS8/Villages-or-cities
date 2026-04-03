@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-    <meta name="google" content="notranslate">
+    <meta name="google" content="notranlate">
     <title>City or village?</title>
     <link rel="icon" type="image/x-icon" href="https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/icono.ico">
     <style>
@@ -104,13 +104,19 @@
         .btn-green { background-color: var(--green) !important; }
         .btn-red { background-color: var(--red) !important; }
 
+        /* Botón Play Personalizado */
+        .btn-play-audio {
+            width: 60px; height: 60px; border-radius: 50%; background-color: var(--blue-600); border: none;
+            cursor: pointer; display: flex; align-items:center; justify-content:center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.2s ease, background-color 0.2s ease; padding-left: 5px;
+        }
+        .btn-play-audio:hover { transform: scale(1.1); background-color: var(--blue-700); }
+        .btn-play-audio:active { transform: scale(0.95); }
+        .play-icon { width: 0; height: 0; border-left: 18px solid white; border-top: 11px solid transparent; border-bottom: 11px solid transparent; }
+
         /* Pantalla de Juego 2 y 3 (Grid) */
         .grid-display { 
             display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 0.5rem; flex:1; width: 100%; 
-        }
-        .grid-instruction-icon {
-            font-size: 5rem;
-            line-height: 1;
         }
         .grid-container {
             display: grid;
@@ -178,9 +184,8 @@
             .image-card { max-width: 100%; }
             .btn-j1 { width: 140px; height: 100px; }
             .btn-j1 .btn-emoji { font-size: 2.2rem; }
-            .grid-instruction-icon {
-                font-size: 4rem;
-            }
+            .btn-play-audio { width: 50px; height: 50px; }
+            .play-icon { border-left-width: 15px; border-top-width: 9px; border-bottom-width: 9px; }
             .grid-container {
                 grid-template-columns: repeat(2, 1fr);
             }
@@ -237,28 +242,32 @@
 
     <section class="screen" id="gameScreen2">
         <header>
-            <h1>Select the pictures of villages 🏘️</h1>
+            <h1>Select the pictures of <span class="text-green">villages</span> 🏘️</h1>
         </header>
         <div class="game-info">
             <div class="progress-bar"><div class="progress-fill" id="progGame2"></div></div>
             <div class="timer" id="timerDisplay2">00:00.0</div>
         </div>
         <div class="grid-display">
-            <div class="grid-instruction-icon">🏘️</div>
+            <button class="btn-play-audio" id="btnReplayTask2" title="Listen again">
+                <div class="play-icon"></div>
+            </button>
             <div class="grid-container" id="gridContainer2"></div>
         </div>
     </section>
 
     <section class="screen" id="gameScreen3">
         <header>
-            <h1>Select the pictures of cities 🏙️</h1>
+            <h1>Select the pictures of <span class="text-red">cities</span> 🏙️</h1>
         </header>
         <div class="game-info">
             <div class="progress-bar"><div class="progress-fill" id="progGame3"></div></div>
             <div class="timer" id="timerDisplay3">00:00.0</div>
         </div>
         <div class="grid-display">
-            <div class="grid-instruction-icon">🏙️</div>
+            <button class="btn-play-audio" id="btnReplayTask3" title="Listen again">
+                <div class="play-icon"></div>
+            </button>
             <div class="grid-container" id="gridContainer3"></div>
         </div>
     </section>
@@ -334,6 +343,9 @@
     let grid3CorrectCount = 0;
     let activeGridData = [];
 
+    // Voz británica
+    let britishVoice = null;
+
     // Precarga de audios
     const audioObjects = {};
     Object.keys(audioFiles).forEach(key => {
@@ -354,6 +366,31 @@
         source.buffer = buffer;
         source.connect(audioContext.destination);
         source.start(0);
+    }
+
+    // --- Carga de voz británica ---
+    function loadVoices() {
+        const voices = speechSynthesis.getVoices();
+        if (voices.length === 0) return;
+        britishVoice = voices.find(v => v.lang.startsWith('en-GB')) || null;
+    }
+    if ('speechSynthesis' in window) {
+        speechSynthesis.onvoiceschanged = loadVoices;
+        loadVoices();
+    }
+
+    // --- Función de lectura con voz británica ---
+    function speakText(text) {
+        if (isMuted) return;
+        if (!('speechSynthesis' in window)) return;
+        speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-GB';
+        if (britishVoice) {
+            utterance.voice = britishVoice;
+        }
+        utterance.rate = 0.75;
+        speechSynthesis.speak(utterance);
     }
 
     // --- Funciones de Sonido ---
@@ -432,6 +469,12 @@
         }, 200);
     }
 
+    function stopAllAudios() {
+        if ('speechSynthesis' in window) {
+            speechSynthesis.cancel();
+        }
+    }
+
     // --- Lógica del Juego ---
 
     function startGame() {
@@ -475,6 +518,8 @@
         updateProgress('progGame1', '0%');
         showScreen('gameScreen1');
         loadGame1Question();
+        // Leer el subtítulo al iniciar la pantalla
+        speakText('Identify the pictures. Select Village or City.');
     }
 
     function loadGame1Question() {
@@ -514,7 +559,7 @@
     }
 
     // ================= GAME 2 & 3 =================
-    function setupGrid(screenId, gridContainerId, progressId, isVillageSelection) {
+    function setupGrid(screenId, gridContainerId, progressId, isVillageSelection, speakInstruction) {
         updateProgress(progressId, '0%');
         showScreen(screenId);
 
@@ -543,6 +588,9 @@
             cell.onclick = () => handleGridClick(cell, isVillageSelection, progressId);
             container.appendChild(cell);
         });
+
+        // Leer la instrucción con Speech Synthesis
+        speakText(speakInstruction);
     }
 
     function handleGridClick(cell, isVillageSelection, progressId) {
@@ -582,16 +630,17 @@
     }
 
     function startGame2() {
-        setupGrid('gameScreen2', 'gridContainer2', 'progGame2', true);
+        setupGrid('gameScreen2', 'gridContainer2', 'progGame2', true, 'Select the pictures of villages.');
     }
 
     function startGame3() {
-        setupGrid('gameScreen3', 'gridContainer3', 'progGame3', false);
+        setupGrid('gameScreen3', 'gridContainer3', 'progGame3', false, 'Select the pictures of cities.');
     }
 
     // ================= FINAL =================
     function endGame() {
         clearInterval(timerInterval);
+        stopAllAudios();
         showScreen('finalScreen');
         
         const finalScore = Math.max(0, Math.round(100 - ((totalAttempts - intentosMinimos) * (100 / intentosMinimos))));
@@ -632,6 +681,18 @@
     
     document.getElementById('btnTrue1').onclick = () => checkGame1Answer(true);
     document.getElementById('btnFalse1').onclick = () => checkGame1Answer(false);
+
+    // Botones de replay para juegos de grid (usan Speech Synthesis)
+    document.getElementById('btnReplayTask2').onclick = () => {
+        unlockAudioContext();
+        reproducirSonidoTap();
+        speakText('Select the pictures of villages.');
+    };
+    document.getElementById('btnReplayTask3').onclick = () => {
+        unlockAudioContext();
+        reproducirSonidoTap();
+        speakText('Select the pictures of cities.');
+    };
     
     document.getElementById('restartBtn').onclick = () => {
         reproducirSonidoTap();
@@ -642,6 +703,7 @@
         if (!isMuted) {
             isMuted = true;
             document.getElementById('muteBtn').innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>';
+            stopAllAudios();
         } else {
             isMuted = false;
             document.getElementById('muteBtn').innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>';
